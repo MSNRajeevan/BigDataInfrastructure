@@ -4,8 +4,27 @@
 ## Introduction
 For our project, we focused on creating a data pipeline to check hotel availability by using various APIs. Our project includes four main steps: ingestion, transformation, storage, and analysis, all done using Google Cloud. We used the Flights API to get flight information, the Weather API to get current weather conditions, and the Hotels API to check for hotels in the city. The data from these APIs is collected (ingestion)(cloud Functions), cleaned and organized (transformation)(DataProc), stored in Google Cloud (storage), and then analyzed to provide useful information to travelers (BigQuery).
 
-## Pipeline
-...
+## Data Sources
+For this project, we have used three main API Sources.
+<h3><br>
+  <b>Hotels</b>(https://rapidapi.com/DataCrawler/api/tripadvisor16) 
+  <br></h3>
+<h4>Endpoint 1: /v1/hotels/searchLocation<br>
+Description:This endpoint to get the geoId which we used in our search hotels endpoint.<br>
+Endpoint 2:/v1/hotels/searchHotels
+Description:This gives us the details of the hotels.</h4>
+
+<h3><b>Flights</b>(http://api.aviationstack.com/documentation) <br></h3>
+<h4>Endpoint 1: v1/flights<br>
+Description: We used the endpoint to get real-time flight data which includes departure and arrival times in cities and schedules.<br>
+<h3><b>Weather</b>(https://weatherstack.com/documentation) </h3>
+<h4>Endpoint1: /current?access_key=YOUR_ACCESS_KEY&query={city} (Replace {city} with the name of the city.
+Description: We used the endpoint for multiple cities to get real-time information of those cities.<br></h4>
+    
+## Data Pipeline Overview<br>
+<p align="center">
+  <img src="./img/GCPImages/DataPipelineOverview.png" alt="Data Pipeline Overview Image">
+</p>
 
 ## Ingestion
 In this step, we used three different Cloud Functions to fetch data from various open-source APIs. Each Cloud Function stores the retrieved data in its own intermediate Google Cloud Storage Bucket as .csv files. We use the Flights API, Weather API, and Hotels API to gather the data needed for our project.
