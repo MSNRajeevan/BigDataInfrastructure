@@ -23,7 +23,7 @@ Description: We used the endpoint for multiple cities to get real-time informati
     
 ## Data Pipeline Overview<br>
 <p align="center">
-  <img src="./img/GCPImages/DataPipeline_Overview" alt="Data Pipeline Overview Image">
+  <img src="./img/GCPImages/DataPipelineOverview.png" alt="Data Pipeline Overview Image">
 </p>
 
 ## Ingestion
