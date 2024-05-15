@@ -81,7 +81,31 @@ In an ideal scenario, we would have unlimited api calls which would let us query
 ...
 
 ## Storage
-...
+For the storage component of our project, we leveraged BigQuery. As outlined in the previous step, each PySpark job concluded by sending/writing the DataFrames into BigQuery. We created a dataset named “scenic-style-420014.BigData767: and stored all three tables within it. These three unique entities were selected as they each represent distinct categories with specific information. This setup allows us to JOIN the tables together for analysis whenever necessary.
+
+Here is a screenshot of all the tables stored within the dataset, which appeared once the Dataproc Workflow with various jobs was successfully completed.
+
+Three Entities in BigQuery Dataset
+<p align="center">
+      <img src="./img/GCPImages/BigQueryTablesUpdateSuccessImage.png" alt="Three Entities in BigQuery Dataset">
+    </p>
+
+
+Preview of the **flight_data Table**:
+<p align="center">
+      <img src="./img/GCPImages/TablePrevieOfFlights.png" alt="Preview of flights data Table">
+    </p>
+
+Preview of the **weather_data Table**:
+<p align="center">
+      <img src="./img/GCPImages/TablePreviewOfWeather.png" alt="Preview of weather data Table">
+    </p>
+
+Preview of the **hotel_data Table**:
+<p align="center">
+      <img src="./img/GCPImages/TablePreviewOfhotels.png" alt="Preview of hotel data Table">
+    </p>
+
 
 ## Analysis
 - **Question 1**: How does a significant drop in atmospheric pressure at arrival airports affect flight arrival delays and impact the availability and ratings of hotels in the corresponding destination cities? (Assuming low pressure is below standard atmospheric pressure at sea level)
