@@ -49,6 +49,17 @@ In an ideal scenario, we would have unlimited api calls which would let us query
     <img src="./img/..." alt="***">
   </p>
 
+  From here, we set up individual Cloud Schedulers for each of these Functions, which each have their own set timeframes. Once these schedulers are run, they overwrite the existing .csv file in the given bucket with the new data in the same filename. Below shows evidence of the Schedulers working for each of the assigned Functions:
+
+  <p align="center">
+    <img src="./img/..." alt="Scheduler jobs">
+  </p>
+
+  - Flight Data Function: The scheduler triggers fetch_flight_data.py at the designated interval, updating the flight_data bucket with the latest flight information.
+  - Weather Data Function: The scheduler triggers fetch_weather_data.py at the designated interval, updating the weather_data bucket with the latest weather information.
+  - Hotel Data Function: The scheduler triggers fetch_hotel_data.py at the designated interval, updating the hotel_data bucket with the latest hotel information.
+
+  
   ...
 
 
