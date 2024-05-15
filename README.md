@@ -64,7 +64,43 @@ In an ideal scenario, we would have unlimited api calls which would let us query
 
 
 ## Transformation
-...
+For the next step of our pipeline, we created a controlled Dataproc Workflow that contains multiple jobs to clean the various datasets using PySpark from the buckets and send them as various tables to BigQuery. Once the workflow starts, it creates a new cluster for each job, runs the respective jobs, clears the processed files from the storage buckets, archives them to their respective archive buckets we created, and stores the processed data in the respective tables in Bigquery.  We have all our Dataproc jobs in the staging area and here is a screenshot of our staging area:
+
+  <p align="center">
+    <img src="img/GCPImages/StagingAreaImageDataProc.png" alt="Image of Staging area">
+  </p>
+
+We designed a Workflow template with multiple independent jobs of data cleaning, detailed as follows:
+
+[Flights DataProc ](https://github.com/MSNRajeevan/BigDataInfrastructure/blob/main/DataProc/Flights_DataProc.py): 
+This job cleans the flight data into an organized table. Tasks include reading the data from its bucket, selecting the necessary columns, setting the correct data types, and sending the cleaned data to BigQuery table under the name *flightsTable*.
+
+  <p align="center">
+    <img src="img/GCPImages/FlightsWorkFlowSuccessImage.png" alt="Image of Flights workflow Success">
+  </p>
+
+[Weather DataProc ](https://github.com/MSNRajeevan/BigDataInfrastructure/blob/main/DataProc/Flights_DataProc.py):
+ This job cleans the weather data into an organized table. Tasks include reading the data from its bucket, selecting the necessary columns, setting the correct data types, and sending the cleaned data to BigQuery  table under the name *weatherTable*.
+
+[Hotels DataProc ](https://github.com/MSNRajeevan/BigDataInfrastructure/blob/main/DataProc/hotelsDataProcJob.py): 
+This job cleans the hotel data into an organized table. Tasks include reading the data from its bucket, selecting the necessary columns, setting the correct data types, and sending the cleaned data to BigQuery table under the name *hotelsTable*.
+
+  <p align="center">
+    <img src="img/GCPImages/HotelAndWeatherWorkflowSuccessImage.png" alt="Image of Weather & Hotels workflows success">
+  </p>
+
+Here is an image showing the Bigquery table that is updated according to our scheduled run:
+
+  <p align="center">
+    <img src="img/GCPImages/BigQueryTablesUpdateSuccessImage.png" alt="Image of success updation of tables">
+  </p>
+
+To automate this process, we set up a Cloud Scheduler to call this Dataproc Workflow. The hotels and weather workflows are scheduled to run every  9  and a half hours every day and flights run every 9 hours 40 minutes since only 2 active clusters from the same region can be running at the same time. As shown here:
+
+  <p align="center">
+    <img src="img/GCPImages/SchedulerDataProcImage.png" alt="Image of Cloud Schedular">
+  </p>
+
 
 ## Storage
 ...
