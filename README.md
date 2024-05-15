@@ -66,14 +66,14 @@ In an ideal scenario, we would have unlimited api calls which would let us query
     This scheduler is set to run every 4 hours EST, fetching the latest weather information and updating the weather data bucket.
 
     <p align="center">
-      <img src="./img/GCPImages/HotelAndWeatherWorkflowSuccessImage.png" alt="Scheduler, Weather">
+      <img src="./img/GCPImages/WeatherWorkflowSuccessImage.png" alt="Scheduler, Weather">
     </p>
     
   - Hotel Data Function: The scheduler triggers fetch_hotel_data.py at the designated interval, updating the hotel_data bucket with the latest hotel information.
     This scheduler is set to run every 4 hours EST, fetching hotel availability information for the next day and updating the hotel data bucket.
 
     <p align="center">
-      <img src="./img/GCPImages/HotelAndWeatherWorkflowSuccessImage.png" alt="Scheduler, Hotel">
+      <img src="./img/GCPImages/HotelWorkflowSuccessImage.png" alt="Scheduler, Hotel">
     </p>
 
 
