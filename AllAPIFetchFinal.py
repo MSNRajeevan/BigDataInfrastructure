@@ -7,19 +7,54 @@ import functions_framework
 from collections import Counter
 
 def download_excel(storage_client):
-    """Download Excel file containing airport codes from GCS."""
+    """
+    Download an Excel file containing airport codes from a Google Cloud Storage bucket.
+
+    Designed to be run on the Google Cloud Platform where it accesses a specified bucket
+    to retrieve the file.
+
+    Args:
+        storage_client (google.cloud.storage.Client): Client for interacting with Google Cloud Storage.
+
+    Returns:
+        str: The local file path to the downloaded Excel file.
+    """
+
     bucket = storage_client.bucket('flights_api_data_dump')
     blob = bucket.blob('city_codes/airports-code@public.xlsx')
     blob.download_to_filename('/tmp/airports-code@public.xlsx')
     return '/tmp/airports-code@public.xlsx'
 
 def read_airport_data(file_path):
-    """Read the Excel file to get airport data."""
+    """
+    Read an Excel file to map airport codes to city names using pandas.
+
+    This function is intended for use on the Google Cloud Platform, allowing seamless integration
+    with cloud storage for file operations.
+
+    Args:
+        file_path (str): Path to the downloaded Excel file.
+
+    Returns:
+        dict: Dictionary mapping airport codes to their respective city names.
+    """
     df = pd.read_excel(file_path)
     return df.set_index('Airport Code')['City Name'].to_dict()
 
 def get_top_cities(processed_data):
-    """Process to find top cities from flights api response based on both departure and arrival cities."""
+    """
+    Identify and return the top cities based on the frequency of flight departures and arrivals.
+
+    This function processes data within a Google Cloud function, utilizing in-memory data structures
+    to determine the most common cities in the dataset.
+
+    Args:
+        processed_data (list of dict): Processed flight data including city names.
+
+    Returns:
+        list: List of top cities (up to six), based on the count of departures and arrivals.
+    """
+
     departure_cities = [flight['departure_city'] for flight in processed_data]
     arrival_cities = [flight['arrival_city'] for flight in processed_data]
 
@@ -40,6 +75,18 @@ def get_top_cities(processed_data):
 
 @functions_framework.http
 def fetch_all_api(request):
+    """
+    Handle an HTTP request to fetch flight, hotel, and weather data, process it, and store it on Google Cloud Storage.
+
+    This cloud function orchestrates various API calls, processes the data, and ensures it is stored
+    in appropriate Google Cloud Storage buckets.
+
+    Args:
+        request (flask.Request): The HTTP request triggering the function.
+
+    Returns:
+        str: Success or failure message based on the outcome of data handling.
+    """
     flights_api_key = "37515365e8ccb5c5e70150cea3f867e4"
     url = f"http://api.aviationstack.com/v1/flights?access_key={flights_api_key}"
 
@@ -69,6 +116,18 @@ def fetch_all_api(request):
         return "Error fetching data from API"
 
 def hotelsAPIFetch(cities, request):
+    """
+    Fetch hotel data for specified cities using an external API and upload it to Google Cloud Storage.
+
+    This function operates within the Google Cloud Platform to manage API responses and data storage seamlessly.
+
+    Args:
+        cities (list of str): Cities for which hotel data needs to be fetched.
+        request (flask.Request): The HTTP request context.
+
+    Returns:
+        str: Status message indicating whether the data was successfully uploaded to Google Cloud Storage.
+    """
 
     api_hotel_data = []
     
@@ -113,7 +172,19 @@ def hotelsAPIFetch(cities, request):
         return "No data fetched from APIs for any city"
 
 def fetch_geo_id(query):
-    """Fetch geoId from the TripAdvisor API for a given city name."""
+    """
+    Retrieve the geographical ID (geoId) for a specified city using an external API.
+
+    Integrated within a Google Cloud function, this utility fetches necessary identifiers
+    for further API requests.
+
+    Args:
+        query (str): The city name to query.
+
+    Returns:
+        tuple: A tuple containing the geoId and the city name, or None if not found.
+    """
+
     url = "https://tripadvisor16.p.rapidapi.com/api/v1/hotels/searchLocation"
     querystring = {"query": query}
     headers = {
@@ -134,7 +205,19 @@ def fetch_geo_id(query):
         return None, None
 
 def fetch_weather_data(cities, request):
-    """Cloud Function entry point to fetch weather data from API for multiple cities and upload it to Google Cloud Storage."""
+    """
+    Fetch and store current weather data for multiple cities, using the Weatherstack API.
+
+    Executed as a Google Cloud function, it manages API calls and data storage on the cloud, optimizing
+    for platform-specific efficiencies.
+
+    Args:
+        cities (list of str): Cities to fetch weather data for.
+        request (flask.Request): The HTTP request triggering the function.
+
+    Returns:
+        str: Status message about the outcome of the data fetching and uploading process.
+    """
     api_key = "b1cf93f3fa8ee1481414f2b6bc767cf4"
     weather_data_list = []
     
@@ -166,7 +249,16 @@ def fetch_weather_data(cities, request):
         return "No weather data fetched from API for any city"
 
 def upload_to_weather_gcs(data, storage_client):
-    """Upload the weather data to a Google Cloud Storage bucket."""
+    """
+    Upload weather data to a specific Google Cloud Storage bucket.
+
+    Specifically tailored for use within Google Cloud functions, this method ensures data
+    is stored reliably in the cloud.
+
+    Args:
+        data (dict): Weather data to upload.
+        storage_client (google.cloud.storage.Client): Client for interacting with Google Cloud Storage.
+    """
     current_day = datetime.date.today().isoformat()
     current_time = datetime.datetime.now().isoformat(timespec='seconds').replace(':', '-')
     file_path = f"weatherapi/{current_day}"
@@ -176,7 +268,19 @@ def upload_to_weather_gcs(data, storage_client):
     blob.upload_from_string(json.dumps(data), content_type='application/json')
 
 def process_flights_data(data, airport_dict):
-    """Flatten the nested JSON data to a simpler format, including city names."""
+    """
+    Process raw flight data into a simplified format, mapping airport codes to city names.
+
+    Intended for execution in Google Cloud functions, this method streamlines data for further analysis
+    and storage on the cloud.
+
+    Args:
+        data (list of dict): Raw flight data from an API.
+        airport_dict (dict): Dictionary mapping airport codes to city names.
+
+    Returns:
+        list of dict: Processed flight data.
+    """
     flattened_data = []
     for entry in data:
         departure_iata = entry['departure']['iata']
@@ -200,7 +304,15 @@ def process_flights_data(data, airport_dict):
     return flattened_data
 
 def upload_to_flights_gcs(data, storage_client):
-    """Upload the data to a GCS bucket."""
+    """
+    Upload processed flight data to a designated Google Cloud Storage bucket.
+
+    This function is tailored for cloud execution, managing data storage within the Google Cloud Platform.
+
+    Args:
+        data (list of dict): Flight data to upload.
+        storage_client (google.cloud.storage.Client): Client for interacting with Google Cloud Storage.
+    """
     current_day = datetime.date.today().isoformat()
     current_time = datetime.datetime.now().isoformat(timespec='seconds').replace(':', '-')
     file_path = f"flightsapi/{current_day}"
@@ -210,7 +322,16 @@ def upload_to_flights_gcs(data, storage_client):
     blob.upload_from_string(json.dumps(data), content_type='application/json')
 
 def upload_to_hotel_gcs(data, storage_client):
-    """Upload the hotel data to a Google Cloud Storage bucket."""
+    """
+    Upload hotel data to a specified Google Cloud Storage bucket.
+
+    Designed for execution on the Google Cloud Platform, this function ensures data is stored securely
+    and efficiently in the cloud.
+
+    Args:
+        data (dict): Hotel data to upload.
+        storage_client (google.cloud.storage.Client): Client for interacting with Google Cloud Storage.
+    """
     current_day = datetime.date.today().isoformat()
     current_time = datetime.datetime.now().isoformat(timespec='seconds').replace(':', '-')
     file_path = f"hotelapi/{current_day}"
