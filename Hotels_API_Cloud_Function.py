@@ -6,7 +6,15 @@ import datetime
 
 @functions_framework.http
 def hotelsAPIFetch(request):
-    """Cloud Function entry point to fetch hotel data from API for multiple cities and upload it to Google Cloud Storage."""
+    """
+    Cloud Function entry point to fetch hotel data from the TripAdvisor API for specified cities and upload it to Google Cloud Storage.
+    
+    Args:
+        request: The HTTP request object that triggered this function.
+    
+    Returns:
+        str: A message indicating whether the data was successfully uploaded to GCS or if an error occurred.
+    """
     cities = ["Hong Kong","Sydney", "Melbourne", "Glasgow" , "Madras" , "Chicago"]
 
     api_hotel_data = []
@@ -52,7 +60,15 @@ def hotelsAPIFetch(request):
         return "No data fetched from APIs for any city"
 
 def fetch_geo_id(query):
-    """Fetch geoId from the TripAdvisor API for a given city name."""
+    """
+    Fetch the geographic ID (geoId) from the TripAdvisor API for a specified city name to be used in hotel searches.
+    
+    Args:
+        query (str): The city name for which the geoId is being fetched.
+    
+    Returns:
+        tuple: A tuple containing the geoId and the query city name if successful, otherwise, None for both.
+    """
     url = "https://tripadvisor16.p.rapidapi.com/api/v1/hotels/searchLocation"
     querystring = {"query": query}
     headers = {
@@ -74,7 +90,16 @@ def fetch_geo_id(query):
 
 
 def upload_to_gcs(data, storage_client):
-    """Upload the hotel data to a Google Cloud Storage bucket."""
+    """
+    Upload fetched hotel data to a Google Cloud Storage bucket in a structured JSON format.
+    
+    Args:
+        data (dict): The hotel data in dictionary format to be uploaded.
+        storage_client: The Google Cloud Storage client used to handle the upload.
+    
+    Creates:
+        A JSON file in the GCS bucket with a timestamped filename.
+    """
     current_day = datetime.date.today().isoformat()
     current_time = datetime.datetime.now().isoformat(timespec='seconds').replace(':', '-')
     file_path = f"hotelapi/{current_day}"
