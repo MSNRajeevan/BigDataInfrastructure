@@ -10,6 +10,59 @@ For our project, we focused on creating a data pipeline to check hotel availabil
 ## Ingestion
 In this step, we used three different Cloud Functions to fetch data from various open-source APIs. Each Cloud Function stores the retrieved data in its own intermediate Google Cloud Storage Bucket as .csv files. We use the Flights API, Weather API, and Hotels API to gather the data needed for our project.
 
+<p align="center">
+  <img src="./img/..." alt="Cloud Functions Diagrams">
+</p>
+
+The following is our Google Cloud Functions with a summary of
+their API source and code:
+
+1. [**Cloud_Functions/cityFunFlight.py**](https://github.com/MSNRajeevan/BigDataInfrastructure/blob/main/api_Ingest/flightAPIFetchData.py):
+    Pulling data from the Flight API source, this returns all the flight information (flight_date, flight_status, departure, arrival, timezone, iata, icao, terminal, gate, delay, scheduled, estimated, actual, estimated_runway, actual_runway). Then, we were missing the city name field, which we needed to query in big query at the end of our analysis. So, we created a new bucket that contains all the iata codes and their respective city names. Using this, we have added the arrival_city and departure_city fields to the data. The bucket that has the dataset that has the iata codes and their respective city names is located here: [flights_api_data_dump/city_codes/airports-code@public.xlsx]
+
+  <p align="center">
+    <img src="./img/..." alt="Flight api Dump">
+  </p>
+
+  All the resultant data is stored in the bucket: [flights_api_data_dump/weatherapi] in its respective date folder.
+
+  <p align="center">
+    <img src="./img/..." alt="Flight bucket">
+  </p>
+
+2. [**Cloud_Functions/weatherAPIFetchData.py**](https://github.com/MSNRajeevan/BigDataInfrastructure/blob/main/api_Ingest/weatherAPIcloudFunction.py): Pulling data from the Weather API source, this returns detailed weather information. The request includes query(cities). The weather information including city name, country, region, latitude, longitude, timezone_id, localtime, localtime_epoch, and utc_offset. The current weather data includes observation_time, temperature, weather_code, weather_descriptions, wind_speed, wind_degree, wind_dir, pressure, precipitation, humidity, cloudcover, feelslike, uv_index, visibility, and is_day. It stores the data in the bigdatadump-apitobq/weatherapi bucket
+
+  <p align="center">
+    <img src="./img/..." alt="Weather bucket">
+  </p>
+
+3. [**Cloud_Functions/hotelsapidatafetch.py**](https://github.com/MSNRajeevan/BigDataInfrastructure/blob/main/api_Ingest/Hotels_API_Cloud_Function.py): Pulling data from the Hotel API source, this returns comprehensive hotel information including hotel_city, hotel_id, ratings_count, rating, provider, price, city, and additional details. It stores the data in the hotel_api_data_dump bucket.
+    
+    <p align="center">
+      <img src="./img/..." alt="Hotel bucket">
+    </p>
+
+4. [**Cloud_Functions/allapisfetchFun.py**](https://github.com/MSNRajeevan/BigDataInfrastructure/blob/main/api_Ingest/AllAPIFetchFinal.py):
+In an ideal scenario, we would have unlimited api calls which would let us query for all the cities for weather and hotel or many cities that we are interested inand all the data that is returned from the flight api must contain the records in the weather api and hotels api based on the arrival_city and departure_city. But sadly, since the apis are all on basic plans, it will only return a few records from the flights api which may or may not have results from the weather and hotels api. So for the scope of this project, in addition to calling all the apis, and using the data from just the data we get from flights, we also created one new function that will get the top 6 cities, based on the arrival and departure city from the flight data and use these cities to fetch the data from weather and hotels api, hence avoiding us to manually enter a lot of cities as queries for both hotels and weather api. We have also scheduled this new function which will fetch data every 4 hours and store the data from all the apis to their respective buckets and leave the files there to be picked up by the dataproc jobs.
+
+  <p align="center">
+    <img src="./img/..." alt="***">
+  </p>
+
+  From here, we set up individual Cloud Schedulers for each of these Functions, which each have their own set timeframes. Once these schedulers are run, they overwrite the existing .csv file in the given bucket with the new data in the same filename. Below shows evidence of the Schedulers working for each of the assigned Functions:
+
+  <p align="center">
+    <img src="./img/..." alt="Scheduler jobs">
+  </p>
+
+  - Flight Data Function: The scheduler triggers fetch_flight_data.py at the designated interval, updating the flight_data bucket with the latest flight information.
+  - Weather Data Function: The scheduler triggers fetch_weather_data.py at the designated interval, updating the weather_data bucket with the latest weather information.
+  - Hotel Data Function: The scheduler triggers fetch_hotel_data.py at the designated interval, updating the hotel_data bucket with the latest hotel information.
+
+  
+  ...
+
+
 ## Transformation
 ...
 
